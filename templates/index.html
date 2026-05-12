@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}SecureU — Scan. Analyze. Stay Secure.{% endblock %}
+
+{% block content %}
+
+<!-- Decorative ambient glows -->
+<div class="glow-bg glow-1"></div>
+<div class="glow-bg glow-2"></div>
+<div class="glow-bg glow-3"></div>
+
+<section class="hero-section d-flex align-items-center justify-content-center min-vh-100 position-relative" style="z-index:1;">
+    <div class="container text-center">
+
+        <!-- ── Hero heading ──────────────────────────────────── -->
+        <div class="mb-5 animate-slide-up">
+
+            <!-- Badge -->
+            <div class="d-inline-flex align-items-center cyber-badge mb-4">
+                <i class="fa-solid fa-shield-halved me-2" style="font-size:0.7rem;"></i>
+                <span>Advanced Security Scanner</span>
+            </div>
+
+            <h1 class="hero-title mb-3">
+                Scan. Analyze. <span class="text-gradient">Stay Secure.</span>
+            </h1>
+
+            <p class="hero-subtitle lead mx-auto" style="max-width:560px;">
+                Analyze any URL in seconds. Surface phishing risks, exposed headers,
+                SSL issues and malicious patterns through our advanced scanning engine.
+            </p>
+        </div>
+
+        <!-- ── Error alert ────────────────────────────────────── -->
+        {% if error %}
+        <div class="mx-auto mb-4 animate-slide-up" style="max-width:600px;">
+            <div class="status-pill fail justify-content-center">
+                <div class="pill-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                {{ error }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ── Scan form ──────────────────────────────────────── -->
+        <div class="scan-form-wrapper mx-auto animate-slide-up" style="max-width:640px; animation-delay:0.1s;">
+
+            <!-- Trust signals inside form -->
+            <div class="d-flex align-items-center justify-content-center gap-3 mb-4" style="gap:20px!important;">
+                <span class="d-flex align-items-center gap-2 fs-xs fw-medium" style="color:var(--text-tertiary);">
+                    <i class="fa-solid fa-lock-open" style="color:var(--green-500);"></i> No data stored
+                </span>
+                <span style="color:var(--border-default);">·</span>
+                <span class="d-flex align-items-center gap-2 fs-xs fw-medium" style="color:var(--text-tertiary);">
+                    <i class="fa-solid fa-bolt" style="color:var(--blue-500);"></i> Lightning fast
+                </span>
+                <span style="color:var(--border-default);">·</span>
+                <span class="d-flex align-items-center gap-2 fs-xs fw-medium" style="color:var(--text-tertiary);">
+                    <i class="fa-solid fa-shield-check" style="color:var(--amber-500);"></i> 6 security checks
+                </span>
+            </div>
+
+            <form action="/scan" method="POST">
+                <div class="input-group mb-2">
+                    <span class="input-group-text">
+                        <i class="fa-solid fa-link fa-sm"></i>
+                    </span>
+                    <input
+                        type="text"
+                        name="url"
+                        class="form-control scan-input"
+                        placeholder="Enter target URL — e.g. https://example.com"
+                        required
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                    <button type="submit" class="btn btn-cyber" onclick="showLoader(this)">
+                        <span id="btn-text">
+                            <i class="fa-solid fa-radar me-2"></i>Scan Target
+                        </span>
+                        <span id="btn-loader" class="d-none">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Scanning…
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Quick examples -->
+            <div class="d-flex align-items-center justify-content-center gap-2 mt-3">
+                <span class="fs-xs" style="color:var(--text-tertiary);">Try:</span>
+                <button onclick="fillURL('https://github.com')"   class="quick-example-btn">github.com</button>
+                <button onclick="fillURL('https://google.com')"   class="quick-example-btn">google.com</button>
+                <button onclick="fillURL('http://example.com')"   class="quick-example-btn">example.com</button>
+            </div>
+        </div>
+
+
+
+    </div>
+</section>
+
+<!-- Inline styles for quick-example buttons -->
+<style>
+.quick-example-btn {
+    background: var(--surface-1);
+    border: 1px solid var(--border-default);
+    border-radius: 99px;
+    padding: 3px 12px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: var(--font-mono);
+}
+.quick-example-btn:hover {
+    background: var(--blue-50);
+    border-color: var(--blue-100);
+    color: var(--blue-600);
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fillURL(url) {
+    document.querySelector('.scan-input').value = url;
+    document.querySelector('.scan-input').focus();
+}
+
+function showLoader(btn) {
+    const input = document.querySelector('.scan-input');
+    if (input.checkValidity()) {
+        document.getElementById('btn-text').classList.add('d-none');
+        document.getElementById('btn-loader').classList.remove('d-none');
+    }
+}
+</script>
+{% endblock %}

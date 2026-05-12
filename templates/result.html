@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Results — {{ result.url }}{% endblock %}
+
+{% block content %}
+<div class="results-page">
+<div class="container">
+
+    <!-- ══════════════════════════════════════════════════════
+         PAGE HEADER
+         ══════════════════════════════════════════════════════ -->
+    <div class="page-header animate-fade-in">
+        <div class="page-header-left">
+            <h2>
+                <i class="fa-solid fa-chart-pie text-accent me-2" style="font-size:1rem;"></i>
+                Target Analysis
+            </h2>
+            <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+                <span class="url-pill">
+                    <i class="fa-solid fa-link"></i>
+                    {{ result.url }}
+                </span>
+                <span class="time-chip">
+                    <i class="fa-regular fa-clock"></i>
+                    {{ result.scan_time }}
+                </span>
+            </div>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <a href="/download_report?url={{ result.url }}" class="btn btn-outline-light btn-sm">
+                <i class="fa-solid fa-download me-2"></i>Report
+            </a>
+            <button id="ask-ai-btn" class="btn btn-sm" onclick="openAIAnalysis()" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;border:none;">
+                <i class="fa-solid fa-robot me-2"></i>Ask AI
+            </button>
+            <a href="/" class="btn btn-cyber btn-sm">
+                <i class="fa-solid fa-rotate-right me-2"></i>New Scan
+            </a>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         MAIN GRID
+         ══════════════════════════════════════════════════════ -->
+    <div class="row g-4">
+
+        <!-- ─────────────────────────────────────────────────
+             LEFT COLUMN: Infrastructure Checks
+             ───────────────────────────────────────────────── -->
+        <div class="col-lg-3 animate-slide-right" style="animation-delay:0.08s;">
+            <div class="result-card h-100" style="padding: 22px;">
+
+                <!-- Panel heading -->
+                <div class="d-flex align-items-center gap-2 mb-4" style="padding-bottom:14px; border-bottom:1px solid var(--border-subtle);">
+                    <div style="width:30px;height:30px; background:var(--amber-50); border:1px solid var(--amber-100); border-radius:var(--radius-sm); display:flex;align-items:center;justify-content:center; color:var(--amber-600); font-size:0.78rem;">
+                        <i class="fa-solid fa-shield"></i>
+                    </div>
+                    <span style="font-size:0.85rem; font-weight:600; color:var(--text-primary);">Infrastructure</span>
+                </div>
+
+                <!-- SSL / TLS -->
+                <div class="mb-4">
+                    <div class="section-label">
+                        SSL / TLS Certificate
+                    </div>
+                    {% if result.ssl.ssl_valid %}
+                    <div class="status-pill ok">
+                        <div class="pill-icon"><i class="fa-solid fa-check fa-xs"></i></div>
+                        Valid Certificate
+                    </div>
+                    {% else %}
+                    <div class="status-pill fail">
+                        <div class="pill-icon"><i class="fa-solid fa-xmark fa-xs"></i></div>
+                        <span>{{ result.ssl.ssl_error or "No SSL Certificate" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Security Headers -->
+                <div class="mb-4">
+                    <div class="section-label">
+                        Security Headers
+                        <span class="count-badge">{{ result.headers.missing|length }} missing</span>
+                    </div>
+                    <div class="scroll-area">
+                        {% if result.headers.missing %}
+                            {% for h in result.headers.missing %}
+                            <div class="issue-row">
+                                <span class="issue-dot"></span>
+                                <span>{{ h.header }}</span>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="ok-row">
+                                <i class="fa-solid fa-circle-check" style="color:var(--green-500);"></i>
+                                All recommended headers present
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Vulnerability Findings -->
+                <div>
+                    <div class="section-label">
+                        Vulnerability Scan
+                        <span class="count-badge">{{ result.vulnerabilities.findings|length }} found</span>
+                    </div>
+                    <div class="scroll-area">
+                        {% if result.vulnerabilities.findings %}
+                            {% for find in result.vulnerabilities.findings %}
+                            <div class="issue-row warning">
+                                <span class="issue-dot"></span>
+                                <span>{{ find }}</span>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="ok-row">
+                                <i class="fa-solid fa-circle-check" style="color:var(--green-500);"></i>
+                                No XSS / SQLi vectors found
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────────────
+             CENTER COLUMN: Score
+             ───────────────────────────────────────────────── -->
+        <div class="col-lg-5 animate-scale-in" style="animation-delay:0.04s;">
+            <div class="result-card h-100">
+
+                <div class="score-card-inner">
+                    <!-- Section label -->
+                    <p class="fs-xs fw-bold letter-spacing-1 mb-4" style="color:var(--text-tertiary); text-transform:uppercase;">
+                        Overall Security Score
+                    </p>
+
+                    <!-- SVG Ring -->
+                    <div class="score-ring-wrap">
+                        <svg class="progress-ring" width="200" height="200" viewBox="0 0 200 200">
+                            <circle class="progress-ring__circle-bg"
+                                    stroke="var(--surface-base)"
+                                    stroke-width="12"
+                                    fill="transparent"
+                                    r="88" cx="100" cy="100"/>
+                            <circle id="scoreRing"
+                                    class="progress-ring__circle"
+                                    stroke="{% if result.score.color == 'success' %}var(--green-500){% elif result.score.color == 'warning' %}var(--amber-500){% elif result.score.color == 'danger' %}var(--red-500){% else %}var(--blue-500){% endif %}"
+                                    stroke-width="12"
+                                    stroke-dasharray="553 553"
+                                    stroke-dashoffset="553"
+                                    stroke-linecap="round"
+                                    fill="transparent"
+                                    r="88" cx="100" cy="100"/>
+                        </svg>
+                        <div class="score-number-wrapper">
+                            <span id="scoreNumber" class="display-1 fw-bold
+                                {% if result.score.color == 'success' %}text-success
+                                {% elif result.score.color == 'warning' %}text-warning
+                                {% elif result.score.color == 'danger' %}text-danger
+                                {% else %}text-info{% endif %}">0</span>
+                            <span class="denom">/100</span>
+                        </div>
+                    </div>
+
+                    <!-- Level + Grade -->
+                    <div class="mb-5 text-center">
+                        <h3 class="fw-bold mb-2" style="font-family:var(--font-display); letter-spacing:-0.02em; color:var(--text-primary);">
+                            {{ result.score.level }}
+                        </h3>
+                        <span class="score-level-badge
+                            {% if result.score.color == 'success' %}
+                                bg-success bg-opacity-25 text-success border-success
+                            {% elif result.score.color == 'warning' %}
+                                bg-warning bg-opacity-25 text-warning border-warning
+                            {% elif result.score.color == 'danger' %}
+                                bg-danger bg-opacity-25 text-danger border-danger
+                            {% else %}
+                                bg-info bg-opacity-25 text-info border-info
+                            {% endif %}"
+                            style="border-width:1px; border-style:solid;">
+                            <i class="fa-solid
+                                {% if result.score.color == 'success' %}fa-shield-check
+                                {% elif result.score.color == 'warning' %}fa-triangle-exclamation
+                                {% elif result.score.color == 'danger' %}fa-skull-crossbones
+                                {% else %}fa-info-circle{% endif %}
+                                me-2"></i>
+                            Grade: <strong>{{ result.score.grade }}</strong>
+                        </span>
+                    </div>
+
+                    <!-- Score Breakdown table -->
+                    <div style="width:100%; border-top: 1px solid var(--border-subtle); padding-top:20px;">
+                        <p class="section-label mb-3">Score Breakdown</p>
+                        <table class="breakdown-table">
+                            <tbody>
+                                <tr>
+                                    <td class="bd-label">SSL / HTTPS</td>
+                                    <td class="bd-bar-wrap">
+                                        <div class="bd-bar-track">
+                                            <div class="bd-bar-fill" style="width:{{ (result.score.breakdown.ssl / 20 * 100)|int }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td class="bd-score">{{ result.score.breakdown.ssl }}/20</td>
+                                </tr>
+                                <tr>
+                                    <td class="bd-label">Sec. Headers</td>
+                                    <td class="bd-bar-wrap">
+                                        <div class="bd-bar-track">
+                                            <div class="bd-bar-fill" style="width:{{ (result.score.breakdown.headers / 20 * 100)|int }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td class="bd-score">{{ result.score.breakdown.headers }}/20</td>
+                                </tr>
+                                <tr>
+                                    <td class="bd-label">URL Safety</td>
+                                    <td class="bd-bar-wrap">
+                                        <div class="bd-bar-track">
+                                            <div class="bd-bar-fill" style="width:{{ (result.score.breakdown.url / 20 * 100)|int }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td class="bd-score">{{ result.score.breakdown.url }}/20</td>
+                                </tr>
+                                <tr>
+                                    <td class="bd-label">Vulnerabilities</td>
+                                    <td class="bd-bar-wrap">
+                                        <div class="bd-bar-track">
+                                            <div class="bd-bar-fill" style="width:{{ (result.score.breakdown.vulnerabilities / 20 * 100)|int }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td class="bd-score">{{ result.score.breakdown.vulnerabilities }}/20</td>
+                                </tr>
+                                <tr>
+                                    <td class="bd-label">Availability</td>
+                                    <td class="bd-bar-wrap">
+                                        <div class="bd-bar-track">
+                                            <div class="bd-bar-fill" style="width:{{ (result.score.breakdown.availability / 20 * 100)|int }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td class="bd-score">{{ result.score.breakdown.availability }}/20</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────────────
+             RIGHT COLUMN: ML + Recommendations
+             ───────────────────────────────────────────────── -->
+        <div class="col-lg-4 animate-slide-left" style="animation-delay:0.08s;">
+            <div class="d-flex flex-column h-100 gap-4">
+
+                <!-- ML Assessment Card -->
+                <div class="result-card" style="padding:22px;">
+                    <div class="d-flex align-items-center gap-2 mb-4" style="padding-bottom:14px; border-bottom:1px solid var(--border-subtle);">
+                        <div style="width:30px;height:30px; background:var(--violet-50); border:1px solid rgba(139,92,246,0.15); border-radius:var(--radius-sm); display:flex;align-items:center;justify-content:center; color:var(--violet-500); font-size:0.78rem;">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <span style="font-size:0.85rem; font-weight:600; color:var(--text-primary);">ML Engine Assessment</span>
+                    </div>
+
+                    <!-- Prediction -->
+                    <div class="ml-prediction-wrap {% if result.ml_classification.prediction == 'Safe' %}pred-safe{% else %}pred-malicious{% endif %} mb-3">
+                        <div class="ml-icon-circle">
+                            {% if result.ml_classification.prediction == "Safe" %}
+                            <i class="fa-solid fa-check"></i>
+                            {% else %}
+                            <i class="fa-solid fa-skull-crossbones"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="ml-label">{{ result.ml_classification.prediction }}</div>
+                            <div class="ml-conf">{{ result.ml_classification.confidence }}% confidence</div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Recommendations Card -->
+                <div class="result-card flex-grow-1" style="padding:22px; overflow:hidden;">
+                    <div class="d-flex align-items-center gap-2 mb-4" style="padding-bottom:14px; border-bottom:1px solid var(--border-subtle);">
+                        <div style="width:30px;height:30px; background:var(--amber-50); border:1px solid var(--amber-100); border-radius:var(--radius-sm); display:flex;align-items:center;justify-content:center; color:var(--amber-600); font-size:0.78rem;">
+                            <i class="fa-solid fa-lightbulb"></i>
+                        </div>
+                        <span style="font-size:0.85rem; font-weight:600; color:var(--text-primary);">Recommendations</span>
+                        <span class="count-badge ms-auto">{{ result.recommendations|length }}</span>
+                    </div>
+
+                    <div class="scroll-area pe-1" style="max-height:320px;">
+                        {% if result.recommendations %}
+                            {% for rec in result.recommendations %}
+                            <div class="rec-item
+                                {% if rec.priority == 'Critical' %}crit
+                                {% elif rec.priority == 'High' %}high
+                                {% elif rec.priority == 'Medium' %}med
+                                {% else %}low{% endif %}">
+                                <div class="rec-header">
+                                    <span class="rec-title">{{ rec.issue }}</span>
+                                    <span class="priority-chip
+                                        {% if rec.priority == 'Critical' %}crit
+                                        {% elif rec.priority == 'High' %}high
+                                        {% elif rec.priority == 'Medium' %}med
+                                        {% else %}low{% endif %}">
+                                        {{ rec.priority }}
+                                    </span>
+                                </div>
+                                <div class="rec-fix">{{ rec.fix }}</div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <div style="width:52px;height:52px; background:var(--green-50); border:1px solid var(--green-100); border-radius:50%; display:flex;align-items:center;justify-content:center; margin:0 auto 12px; color:var(--green-600); font-size:1.1rem;">
+                                    <i class="fa-regular fa-thumbs-up"></i>
+                                </div>
+                                <p class="fs-sm fw-medium" style="color:var(--text-secondary);">No prominent risks identified.</p>
+                                <p class="fs-xs" style="color:var(--text-tertiary);">The target appears well-configured.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div><!-- /row -->
+
+</div><!-- /container -->
+</div><!-- /results-page -->
+{% endblock %}
+
+{% block extra_js %}
+{# ── Pass server data to JS via a JSON data island (avoids editor lint errors) ── #}
+<script id="scan-report-data" type="application/json">
+{
+    "url":                  {{ result.url | tojson }},
+    "score":                {{ result.score.total | default(0) }},
+    "grade":                {{ result.score.grade | tojson }},
+    "level":                {{ result.score.level | tojson }},
+    "scan_time":            {{ result.scan_time | tojson }},
+    "ssl_valid":            {{ 'true' if result.ssl.ssl_valid else 'false' }},
+    "ssl_error":            {{ (result.ssl.ssl_error or '') | tojson }},
+    "missing_headers":      {{ result.headers.missing | map(attribute='header') | list | tojson }},
+    "vuln_findings":        {{ result.vulnerabilities.findings | tojson }},
+    "ml_prediction":        {{ result.ml_classification.prediction | tojson }},
+    "ml_confidence":        {{ result.ml_classification.confidence }},
+    "recommendations":      {{ result.recommendations | tojson }},
+    "breakdown": {
+        "ssl":              {{ result.score.breakdown.ssl }},
+        "headers":          {{ result.score.breakdown.headers }},
+        "url":              {{ result.score.breakdown.url }},
+        "vulnerabilities":  {{ result.score.breakdown.vulnerabilities }},
+        "availability":     {{ result.score.breakdown.availability }}
+    }
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ── Parse the data island ────────────────────────────────
+    window.SCAN_REPORT = JSON.parse(
+        document.getElementById("scan-report-data").textContent
+    );
+
+    // ── Animate score ring ───────────────────────────────────
+    const targetScore = window.SCAN_REPORT.score || 0;
+    const numberEl    = document.getElementById("scoreNumber");
+    const ring        = document.getElementById("scoreRing");
+
+    const circumference = 553;
+    ring.style.strokeDasharray  = circumference + " " + circumference;
+    ring.style.strokeDashoffset = circumference;
+
+    const duration = 1400;
+    const fps      = 60;
+    const frames   = duration / (1000 / fps);
+    const step     = targetScore / frames;
+
+    let current = 0, frame = 0;
+
+    const timer = setInterval(function () {
+        frame++;
+        current += step;
+        if (frame >= frames || current >= targetScore) {
+            current = targetScore;
+            clearInterval(timer);
+        }
+        numberEl.textContent = Math.round(current);
+        ring.style.strokeDashoffset = circumference - (current / 100) * circumference;
+    }, 1000 / fps);
+
+});
+
+function openAIAnalysis() {
+    // Open chatbot if not already open
+    if (typeof toggleChat === "function" && !chatOpen) { toggleChat(); }
+}
+</script>
+{% endblock %}
