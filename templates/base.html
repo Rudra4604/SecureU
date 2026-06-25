@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SecureU — Website Security Scanner{% endblock %}</title>
 
+    <!-- SEO Metadata -->
+    <meta name="description" content="SecureU is a professional cybersecurity vulnerability scanner and threat defense tool. Analyze any URL in seconds for SSL, security headers, XSS, SQLi, and phishing patterns using active heuristics and Machine Learning.">
+    <meta name="keywords" content="SecureU, security scanner, website vulnerability, SSL certificate validator, security headers compliance, machine learning URL analysis, phishing detector, cybersecurity portfolio">
+    <meta name="author" content="SecureU">
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SecureU — Website Security Scanner">
+    <meta property="og:description" content="Analyze any URL in seconds for SSL, security headers, vulnerability risks, and phishing heuristics using active checks and Machine Learning.">
+    <meta property="og:image" content="{{ url_for('static', filename='favicon.svg') }}">
+    <meta property="og:url" content="{{ request.url }}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:title" content="SecureU — Website Security Scanner">
+    <meta property="twitter:description" content="Analyze any URL in seconds for SSL, security headers, vulnerability risks, and phishing heuristics using active checks and Machine Learning.">
+    <meta property="twitter:image" content="{{ url_for('static', filename='favicon.svg') }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+
     <!-- Google Fonts: Syne (display) + DM Sans (body) + DM Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

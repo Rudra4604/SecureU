@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+bin/
+include/
+lib/
+share/
+
+# Local environment variables
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db

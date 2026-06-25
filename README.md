@@ -1,115 +1,138 @@
-# Cyber Security Website Checker using Machine Learning
+# 🛡️ SecureU — Cybersecurity Scanner & AI Threat Assistant
 
-A modern, web-based vulnerability scanner and threat defense tool. This project uses a hybrid approach, combining **Active Cybersecurity Heuristics** with **Machine Learning & NLP Analysis** to provide a dual-layered assessment of any target website.
+[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
+[![Framework](https://img.shields.io/badge/framework-Flask-lightgrey.svg)](https://flask.palletsprojects.com/)
+[![Machine Learning](https://img.shields.io/badge/ML-scikit--learn-orange.svg)](https://scikit-learn.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![Deployment](https://img.shields.io/badge/deploy-Vercel-black.svg)](https://vercel.com/)
 
-## 🚀 Project Overview
-The "Cyber Security Website Checker" aims to identify potential risks and malicious intents of given URLs in real-time. It evaluates URLs based on their structural payload, infrastructure configurations (SSL/Headers), and content risks using advanced Natural Language Processing.
+SecureU is a production-ready, hybrid web vulnerability scanner and intelligent threat defense tool. Designed for modern web auditing, it combines **active cybersecurity heuristics** with a **machine learning classifier (Logistic Regression)** to deliver multi-layered threat assessments of target URLs in real-time. 
 
-## ✨ Features (50% Cyber / 50% ML)
-
-### 🔐 Cybersecurity Features
-1. **SSL / TLS Certificate Validation**: Validates the presence of HTTPS and checks if the underlying SSL certificate is valid.
-2. **HTTP Security Headers Check**: Audits responses for crucial protection headers (e.g., CSP, HSTS, X-Frame-Options, X-XSS-Protection).
-3. **Passive Vulnerability Scan**: Passively crawls page content to identify potential XSS and SQL Injection vectors.
-4. **URL Heuristics**: Analyzes the structural integrity of the URL (e.g., excessive length, IP address masking, multiple subdomains).
-5. **Infrastructure Availability**: Tracks status codes, request timeouts, and overall latency.
-
-### 🤖 Machine Learning Features
-1. **URL Intent Classifier (Logistic Regression)**: Predicts malicious intent based on feature vectors extracted from the target URL.
-2. **Intelligent Recommendation Engine**: A content-based heuristic filter that proposes actionable fixes depending on the specific combination of threats detected.
+Additionally, it features an interactive **AI Security Chatbot** powered by Groq (LLaMA 3.3) to provide contextual, actionable explanations and mitigation plans based on the live scan results.
 
 ---
 
-## ⚙️ System Workflow
-1. **Input Phase**: User enters a target URL into the modern Dashboard.
-2. **Orchestration**: The Flask Backend simultaneously dispatches requests to the Cybersecurity Engine and ML Pipeline.
-3. **Cyber Assessment**: Executes connection handshakes, HTTP header parsing, and regex-based vulnerability scanning.
-4. **ML Inference**: URL features are scaled and passed through the saved Logistic Regression model for binary classification.
-5. **Scoring Engine**: Evaluates the disparate data sources to assign an aggregate threat score out of 100.
-6. **Output Generation**: Renders a comprehensive, glassmorphism-styled metrics dashboard and produces a downloadable artifact report.
+## 🚀 Key Features
+
+### 🔐 Active Cybersecurity Auditing
+1. **SSL / TLS Certificate Checker**: Conducts deep socket handshakes to validate HTTPS validity, issuer status, and certificate expiration issues.
+2. **Security Headers Compliance**: Audits responses for crucial modern headers (`Content-Security-Policy`, `X-Frame-Options`, `Strict-Transport-Security`, `X-XSS-Protection`, `X-Content-Type-Options`, `Referrer-Policy`).
+3. **Passive Vulnerability Scan**: Crawls response content to detect potential Cross-Site Scripting (XSS) and SQL Injection (SQLi) vectors.
+4. **Passive URL Heuristics**: Evaluates URL strings for brand keyword typosquatting, suspicious TLDs, excessive subdomains, IP-based masking, and obfuscated encoding.
+5. **Infrastructure Availability**: Tracks latency, request timeouts, and HTTP status code reliability.
+
+### 🤖 Intelligent Machine Learning & AI
+1. **Intent Classifier (Logistic Regression)**: Predicts the likelihood of a URL being malicious based on feature vectors extracted from URL characteristics (length, HTTPS status, special chars, IP usage).
+2. **AI Chatbot (LLaMA 3.3 via Groq)**: A floating chatbot assistant that ingests the active scan context, answers questions, and suggests code snippets to fix security flaws.
 
 ---
 
-## 🧠 Algorithms Explanation
+## 🛠️ System Architecture
 
-### 1. Logistic Regression Model
-Our primary classifier uses Logistic Regression to perform binary classification (Safe vs. Malicious). The model relies on four core features: `[URL Length, HTTPS Presence, Special Char Count, IP Masking]`.
-
-**Mathematical Formula:**
-Logistic Regression uses the Sigmoid function to squash values between 0 and 1:
-$$ P(Y=1 | X) = \frac{1}{1 + e^{-(\beta_0 + \beta_1x_1 + \beta_2x_2 + \dots + \beta_nx_n)}} $$
-Where:
-- $P(Y=1 | X)$ is the probability of the URL being malicious.
-- $\beta_0$ is the intercept/bias.
-- $\beta_n$ are the learned weights for their respective features ($x_n$).
-
-If the probability $P \ge 0.5$, it is labeled "Malicious", else "Safe".
-
-### 2. TF-IDF (Term Frequency-Inverse Document Frequency)
-Used to actively gauge phishing language and urgency markers in the HTML content without relying on fixed rigid strings alone.
-
-**Mathematical Formula:**
-$$ \text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \text{IDF}(t, D) $$
-Where:
-- **TF (Term Frequency)**: $ \text{TF}(t, d) = \frac{\text{Count of term } t \text{ in document } d}{\text{Total terms in document } d} $
-- **IDF (Inverse Document Frequency)**: $ \text{IDF}(t, D) = \log\left(\frac{\text{Total documents in corpus } N}{\text{Documents containing term } t}\right) $
-
-A higher combined score indicates suspicious linguistic intent characteristic of Social Engineering.
+```mermaid
+graph TD
+    User([User URL Input]) -->|Submit Form| Backend[Flask Backend Orchestrator]
+    Backend -->|Async Scans| CyberEngine[Heuristics & Cyber Engine]
+    Backend -->|Feature Extraction| MLEngine[Logistic Regression Classifier]
+    
+    CyberEngine -->|SSL Certificate Validation| ScoreCalc[Scoring Engine]
+    CyberEngine -->|HTTP Response Header Audit| ScoreCalc
+    CyberEngine -->|HTML Payload Vulnerability Check| ScoreCalc
+    
+    MLEngine -->|Predictive Probabilities| ScoreCalc
+    
+    ScoreCalc -->|Overall Score & Recommendations| UserInterface[Interactive Glassmorphic Dashboard]
+    ScoreCalc -->|Scan Context Payload| AIChatbot[Groq LLaMA 3.3 Assistant]
+```
 
 ---
 
-## 🛠️ Installation Steps
+## 💻 Tech Stack
 
-1. **Clone the Directory**
-   Ensure you have downloaded or cloned this project folder to your local machine.
-
-2. **Set up the Environment** (Optional but Recommended)
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install Dependencies**
-   The project requires the libraries outlined in the requirements file.
-   ```bash
-   pip install -r "requirements (1).txt"
-   ```
-   *(Note: Ensure requirements include `flask`, `scikit-learn`, `requests`, `numpy`, and `beautifulsoup4`)*
+- **Backend**: Python 3.11, Flask
+- **Frontend**: Bootstrap 5, Glassmorphic Vanilla CSS, FontAwesome 6, marked.js
+- **Machine Learning**: scikit-learn, numpy, pandas (model training only)
+- **AI Integration**: Groq API (llama-3.3-70b-versatile model)
+- **Deployment**: Vercel Serverless Functions (`@vercel/python`)
 
 ---
 
-## 💻 How to Run
+## ⚙️ Project Reorganization
 
-1. **Ensure ML Models are Ready**
-   If `models/model.pkl` and `models/scaler.pkl` do not exist, run the training script first:
-   ```bash
-   python train_model.py
-   ```
-
-2. **Start the Flask Backend**
-   ```bash
-   python app.py
-   ```
-
-3. **Access the Application**
-   Open your browser and navigate to:
-   ```
-   http://127.0.0.1:5000/
-   ```
+The project has been cleaned up and optimized for production deployment:
+- **Clean Root Structure**: Legacy nested folders (`task/task/`) have been removed. All core application files reside at the root.
+- **Production Optimization**: `pandas` has been removed from the runtime dependencies (`requirements.txt`) to optimize Vercel's Serverless Function bundle size and boost cold-start execution speeds.
+- **Environment Separation**: Local secrets have been removed, replaced with `.env` configuration loading, and templated in `.env.example`.
+- **Favicon & SEO**: Included search engine optimization headers, Open Graph metadata, and a modern SVG-based favicon.
 
 ---
 
-## 📊 Example Output
-Upon scanning a target like `http://example.com`:
-- **Security Score**: `85/100 (Safe)`
-- **ML Engine**: `Safe (98.4% Confidence)`
-- **Infrastructure**: `Missing HSTS Header`
-- **Output Report Formats**: Displays interactive UI progress bars and a downloadable `.txt` report breakdown.
+## 🚀 Installation & Local Development
+
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd SecureU
+```
+
+### 2. Set Up Virtual Environment
+```bash
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+To install standard application dependencies:
+```bash
+pip install -r requirements.txt
+```
+*Note: If you plan to retrain the ML model using `train_model.py`, install the developer requirements instead:*
+```bash
+pip install -r requirements-dev.txt
+```
+
+### 4. Configure Environment Variables
+Copy `.env.example` to `.env` and fill in your keys:
+```bash
+cp .env.example .env
+```
+Open `.env` and configure:
+```env
+FLASK_SECRET_KEY=your-random-secret-key-here
+GROQ_API_KEY=your-groq-api-key-here
+```
+
+### 5. Train the Machine Learning Model
+The model binaries are pre-packaged. However, to retrain them on the provided dataset:
+```bash
+python train_model.py
+```
+
+### 6. Run the Application Locally
+```bash
+python app.py
+```
+Open your browser and navigate to `http://127.0.0.1:5000/`.
 
 ---
 
-## 🔮 Future Enhancements
-- Integrations with VirusTotal / Shodan APIs for Threat Intelligence Enrichment.
-- Deployment via Docker containers for universal setup.
-- Advanced ML integration using Deep Learning (LSTM / Transformers) for superior heuristic evasion detection.
-- PDF Report generation for business compliance contexts.
+## ☁️ Vercel Deployment
+
+SecureU is fully configured for deployment on Vercel using `vercel.json` and serverless Python functions.
+
+### Steps to Deploy:
+1. Push your repository to GitHub.
+2. Sign in to your [Vercel Dashboard](https://vercel.com) and click **Add New Project**.
+3. Import the `SecureU` repository.
+4. Add the following **Environment Variables** in the Vercel project configuration:
+   - `FLASK_SECRET_KEY` (a random secure key)
+   - `GROQ_API_KEY` (your Groq API key)
+5. Click **Deploy**. Vercel will automatically discover the `vercel.json` file, install dependencies from `requirements.txt`, and build the serverless functions.
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

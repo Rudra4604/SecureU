@@ -5,10 +5,18 @@ import socket
 import pickle
 import time
 import urllib.parse
+import urllib3
 import numpy as np
 
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, make_response
+from dotenv import load_dotenv
+
+# Load local environment variables from .env file
+load_dotenv()
+
+# Suppress urllib3 InsecureRequestWarning for SSL verification bypass
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 try:
     import requests
@@ -27,7 +35,7 @@ except ImportError:
 # ── App Setup ──────────────────────────────────────────────────────────────
 
 app = Flask(__name__)
-app.secret_key = "cybersec_ml_secret_2024"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "cybersec_ml_secret_2024")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
